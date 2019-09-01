@@ -111,3 +111,12 @@ class Game:
     '''
     def find_path(self, start_field: field.Field, end_field: field.Field):  # TODO
         pass
+
+    def distance(self, start, stop):
+        x1 = start % self.rect_number
+        x2 = stop % self.rect_number
+        y1 = int(start / self.rect_number) - 1
+        y2 = int(stop / self.rect_number) - 1
+        x = abs(x1 - x2)
+        y = abs(y1 - y2)
+        return x + y
