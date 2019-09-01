@@ -42,11 +42,20 @@ class Game:
     '''
     def play(self):
         player_round = True
+        player_choice = 0
         while player_round:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    player_round = False
-                    break
+                    if player_choice == 0:  # first click
+                        position = pygame.mouse.get_pos()
+                        selected_field = self.search_for_field(position)
+                        if selected_field is not None:
+                            selected_field.ball.highlight()
+                            player_choice = 1
+                        break
+                    elif player_choice == 1:    # second click
+                        player_round = False
+
                 if event.type == pygame.QUIT:
                     quit()  # TODO: not pretty (fix it!)
 
@@ -66,4 +75,8 @@ class Game:
             i = random.randrange(len(self.field_list))
         return self.field_list[i]
 
-
+    def search_for_field(self, position):
+        for i in self.field_list:
+            if position[0] >= i.position[0] and position[1] >= i.position[1] and position[0] <= i.position[0] + i.dimensions and position[1] <= i.position[1] + i.dimensions:
+                return i
+        return None

@@ -21,3 +21,7 @@ class Field:
 
     def release(self):
         self.ball = None
+
+    def select(self):
+        # self.ball
+        pass

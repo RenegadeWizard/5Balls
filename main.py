@@ -24,6 +24,7 @@ def main():
                 break
         game_console.mid_round()
         game_console.play()
+        pygame.display.update()
 
 
     pygame.quit()
