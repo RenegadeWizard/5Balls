@@ -2,9 +2,6 @@ import pygame
 import menu
 import game
 
-# colors(r,   g,   b)
-
-
 
 def main():
     pygame.init()
@@ -12,10 +9,7 @@ def main():
     display = pygame.display.set_mode((750, 750), 0)
 
     game_on = True
-
     game_console = game.Game()
-
-
 
     while game_on:
         for event in pygame.event.get():
@@ -26,9 +20,9 @@ def main():
         game_console.play()
         pygame.display.update()
 
-
     pygame.quit()
     quit()
+
 
 if __name__ == "__main__":
     main()

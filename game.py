@@ -13,8 +13,10 @@ pink = (255, 0, 255)
 cyan = (0, 255, 255)
 gray = (200, 200, 200)
 dark_gray = (100, 100, 100)
+yellow = (255, 255, 0)
+orange = (255, 140, 0)
 
-colors = [blue, red, green, pink, cyan]
+colors = [blue, red, green, white, dark_gray, yellow, orange]
 
 
 def rand_color():
@@ -46,14 +48,23 @@ class Game:
         while player_round:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    position = pygame.mouse.get_pos()
                     if player_choice == 0:  # first click
-                        position = pygame.mouse.get_pos()
                         selected_field = self.search_for_field(position)
                         if selected_field is not None:
-                            selected_field.ball.highlight()
+                            selected_field.select()
                             player_choice = 1
                         break
                     elif player_choice == 1:    # second click
+                        selected_field_end = self.search_for_field(position)
+                        if selected_field_end is not None:
+                            selected_field_end.ball = selected_field.ball
+                            selected_field_end.update_ball()
+                            selected_field.ball = None
+                            selected_field_end.select()
+                            selected_field.draw()
+                            selected_field.unselect()
+                            selected_field_end.unselect()
                         player_round = False
 
                 if event.type == pygame.QUIT:

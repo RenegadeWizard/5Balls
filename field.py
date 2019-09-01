@@ -23,5 +23,19 @@ class Field:
         self.ball = None
 
     def select(self):
-        # self.ball
-        pass
+        self.highlight()
+
+    def unselect(self):
+        self.color = (200, 200, 200)
+        self.draw()
+        if self.ball is not None:
+            self.ball.draw()
+
+    def highlight(self):
+        self.color = (150, 150, 150)
+        self.draw()
+        if self.ball is not None:
+            self.ball.draw()
+
+    def update_ball(self):
+        self.ball.position = (self.position[0] + int(self.dimensions/2), self.position[1] + int(self.dimensions/2))
