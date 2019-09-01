@@ -5,7 +5,7 @@ import game
 
 def main():
     pygame.init()
-    pygame.display.set_caption("5 kulek")
+    pygame.display.set_caption("5Balls")
     display = pygame.display.set_mode((750, 750), 0)
 
     game_on = True

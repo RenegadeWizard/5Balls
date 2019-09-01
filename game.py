@@ -33,11 +33,13 @@ class Game:
         self.full_rect = self.rect_size + self.padding
         self.field_list = []
 
+
         self.display.fill(dark_gray)      # background
         for i in range(self.rect_number):
             for j in range(self.rect_number):
                 self.field_list.append(field.Field((self.padding + i*self.full_rect, self.padding + j*self.full_rect),self.rect_size, self.padding, gray).draw())
         pygame.display.update()
+        self.colored_field = self.field_list[0]
 
     '''
         player's move
@@ -47,17 +49,29 @@ class Game:
         player_choice = 0
         while player_round:
             for event in pygame.event.get():
+                mouse_position = pygame.mouse.get_pos()
+                toggle_field = self.search_for_field(mouse_position)
+                # coloring while dragging
+                if toggle_field is not None:
+                    toggle_field.select()
+                    if toggle_field is not self.colored_field:
+                        self.colored_field.unselect()
+                        self.colored_field = toggle_field
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     position = pygame.mouse.get_pos()
-                    if player_choice == 0:  # first click
+                    # First click
+                    if player_choice == 0:
                         selected_field = self.search_for_field(position)
-                        if selected_field is not None:
+                        if selected_field is not None and selected_field.ball is not None:
                             selected_field.select()
                             player_choice = 1
                         break
-                    elif player_choice == 1:    # second click
+                    # Second click
+                    elif player_choice == 1:
                         selected_field_end = self.search_for_field(position)
-                        if selected_field_end is not None:
+                        if selected_field_end.ball is not None:
+                            player_choice = 0
+                        elif selected_field_end is not None and selected_field_end is not selected_field:
                             selected_field_end.ball = selected_field.ball
                             selected_field_end.update_ball()
                             selected_field.ball = None
@@ -65,7 +79,7 @@ class Game:
                             selected_field.draw()
                             selected_field.unselect()
                             selected_field_end.unselect()
-                        player_round = False
+                            player_round = False
 
                 if event.type == pygame.QUIT:
                     quit()  # TODO: not pretty (fix it!)
@@ -91,3 +105,9 @@ class Game:
             if position[0] >= i.position[0] and position[1] >= i.position[1] and position[0] <= i.position[0] + i.dimensions and position[1] <= i.position[1] + i.dimensions:
                 return i
         return None
+
+    '''
+        Implemented A* pathfinding algorithm 
+    '''
+    def find_path(self, start_field: field.Field, end_field: field.Field):  # TODO
+        pass
