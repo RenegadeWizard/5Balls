@@ -37,7 +37,7 @@ class Game:
         self.display.fill(dark_gray)      # background
         for i in range(self.rect_number):
             for j in range(self.rect_number):
-                self.field_list.append(field.Field((self.padding + i*self.full_rect, self.padding + j*self.full_rect),self.rect_size, self.padding, gray).draw())
+                self.field_list.append(field.Field((self.padding + i*self.full_rect, self.padding + j*self.full_rect),self.rect_size, self.padding, gray, i*9+j).draw())
         pygame.display.update()
         self.colored_field = self.field_list[0]
 
@@ -72,6 +72,7 @@ class Game:
                         if selected_field_end.ball is not None:
                             player_choice = 0
                         elif selected_field_end is not None and selected_field_end is not selected_field:
+                            print(self.find_path(selected_field, selected_field_end))
                             selected_field_end.ball = selected_field.ball
                             selected_field_end.update_ball()
                             selected_field.ball = None
@@ -109,14 +110,43 @@ class Game:
     '''
         Implemented A* pathfinding algorithm 
     '''
-    def find_path(self, start_field: field.Field, end_field: field.Field):  # TODO
-        pass
+    def find_path(self, start_field: field.Field, end_field: field.Field):  # TODO: fix it!
+        visited = []    # [3,4,5,2,1] -> [vertex]
+        adjacent = [(self.f_score(start_field.id, start_field.id, end_field.id), start_field.id)]  # [(3,4),(1,2)] -> [(f_score, vertex)]
+        path = []
+
+        while adjacent:
+            adjacent.sort()
+            x = adjacent[0]
+            if x[1] == end_field.id:
+                return path
+            adjacent.remove(x)
+            visited.append(x[1])
+            for y in self.adjacent_list(x[1]):
+                if y in visited or y < 0 or y > 80 and y != x[1]:
+                    continue
+                tentative_g = self.distance(start_field.id, y) + 1  # dunno if ok
+                tentative = False
+                if (self.distance(end_field.id, y), y) not in adjacent:
+                    adjacent.append((self.f_score(y, start_field.id, end_field.id), y))  # nope
+                    tentative = True
+                elif tentative_g < self.distance(y, end_field.id):
+                    tentative = True
+                if tentative:
+                    path.append(y)
+        return False
+
+    def f_score(self, id, start, end):
+        return self.distance(id, start) + self.distance(id, end)
 
     def distance(self, start, stop):
         x1 = start % self.rect_number
         x2 = stop % self.rect_number
-        y1 = int(start / self.rect_number) - 1
+        y1 = int(start / self.rect_number) - 1  # Think if this is ok
         y2 = int(stop / self.rect_number) - 1
         x = abs(x1 - x2)
         y = abs(y1 - y2)
         return x + y
+
+    def adjacent_list(self, vertex):
+        return [vertex-9, vertex-1 if not vertex%9 else vertex, vertex+1 if not (vertex+1)%9 else vertex, vertex+9]
