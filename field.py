@@ -11,6 +11,18 @@ class Field:
         self.display = pygame.display.get_surface()
         self.ball = None
         self.id = field_id
+        self.g_score = None
+        self.h_score = None
+        self.f_score = None
+
+    def __lt__(self, other):
+        return self.f_score < other.f_score
+
+    def set_score(self, h, g):
+        self.h_score = h
+        self.g_score = g
+        self.f_score = h + g
+        return self
 
     def draw(self):
         pygame.draw.rect(self.display, self.color, (self.position[0], self.position[1], self.dimensions, self.dimensions))

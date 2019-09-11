@@ -17,7 +17,8 @@ def main():
                 game_on = False
                 break
         game_console.mid_round()
-        game_console.play()
+        if game_console.play():
+            break
         pygame.display.update()
 
     pygame.quit()
