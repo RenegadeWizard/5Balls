@@ -1,6 +1,5 @@
 import pygame
 import field
-import ball
 import random
 
 # colors (r,g,b)
@@ -17,6 +16,15 @@ yellow = (255, 255, 0)
 orange = (255, 140, 0)
 
 colors = [blue, red, green, white, dark_gray, yellow, orange]
+
+lt = -10
+t = -9
+rt = -8
+l = -1
+r = 1
+lb = 8
+b = 9
+rb = 10
 
 
 def rand_color():
@@ -79,6 +87,7 @@ class Game:
                             selected_field.draw()
                             for i in selected_field.path_to_field:
                                 i.unselect()
+                            print(self.five_in_a_row(selected_field_end, 0, l) + self.five_in_a_row(selected_field_end, 0, r) + 1)  # TODO: Make them disappear
                             player_round = False
                 elif player_choice == 1:
                     selecting_field = self.search_for_field(position)
@@ -99,6 +108,7 @@ class Game:
                                 continue
                             for i in selected_field.path_to_field:
                                 i.select()
+
 
                 if event.type == pygame.QUIT:
                     return True
@@ -194,3 +204,12 @@ class Game:
         if (vertex+1) % 9:
             t.append(vertex+1)
         return t
+
+    def five_in_a_row(self, ball, length, side):
+        temp = self.ret_field_from_id(ball.id + side)
+        if not temp or temp.ball is None:
+            return length
+        if temp.ball.color != ball.ball.color:
+            return length
+        else:
+            return self.five_in_a_row(temp, length + 1, side)
