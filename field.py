@@ -14,6 +14,10 @@ class Field:
         self.g_score = None
         self.h_score = None
         self.f_score = None
+        self.path_to_field = []
+        self.to_field = None
+        self.prev_to_field = None
+        self.prev_path_to_field = []
 
     def __lt__(self, other):
         return self.f_score < other.f_score
@@ -23,6 +27,15 @@ class Field:
         self.g_score = g
         self.f_score = h + g
         return self
+
+    def set_h(self, h):
+        self.h_score = h
+
+    def set_g(self, g):
+        self.g_score = g
+
+    def update_f(self):
+        self.f_score = self.g_score + self.h_score
 
     def draw(self):
         pygame.draw.rect(self.display, self.color, (self.position[0], self.position[1], self.dimensions, self.dimensions))

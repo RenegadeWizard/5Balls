@@ -36,7 +36,7 @@ class Game:
         self.display.fill(dark_gray)      # background
         for i in range(self.rect_number):
             for j in range(self.rect_number):
-                self.field_list.append(field.Field((self.padding + i*self.full_rect, self.padding + j*self.full_rect),self.rect_size, self.padding, gray, i*9+j).draw())
+                self.field_list.append(field.Field((self.padding + i*self.full_rect, self.padding + j*self.full_rect),self.rect_size, self.padding, gray, j*9+i).draw())
         pygame.display.update()
         self.colored_field = self.field_list[0]
 
@@ -48,16 +48,8 @@ class Game:
         player_choice = 0
         while player_round:
             for event in pygame.event.get():
-                mouse_position = pygame.mouse.get_pos()
-                toggle_field = self.search_for_field(mouse_position)
-                # coloring while dragging
-                if toggle_field is not None:
-                    toggle_field.select()
-                    if toggle_field is not self.colored_field:
-                        self.colored_field.unselect()
-                        self.colored_field = toggle_field
+                position = pygame.mouse.get_pos()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    position = pygame.mouse.get_pos()
                     # First click
                     if player_choice == 0:
                         selected_field = self.search_for_field(position)
@@ -68,22 +60,49 @@ class Game:
                     # Second click
                     elif player_choice == 1:
                         selected_field_end = self.search_for_field(position)
-                        if selected_field_end.ball is not None:
+                        if selected_field_end is None or not selected_field.path_to_field:
+                            continue
+                        if selected_field_end is selected_field:
                             player_choice = 0
-                        elif selected_field_end is not None and selected_field_end is not selected_field:
-                            print(self.find_path(selected_field, selected_field_end))
+                            for i in selected_field.path_to_field:
+                                i.unselect()
+                            continue
+                        if selected_field_end.ball is not None:
+                            continue
+                        else:
+                            for i in self.find_path(selected_field, selected_field_end):
+                                i.select()
                             selected_field_end.ball = selected_field.ball
                             selected_field_end.update_ball()
                             selected_field.ball = None
                             selected_field_end.select()
                             selected_field.draw()
-                            selected_field.unselect()
-                            selected_field_end.unselect()
+                            for i in selected_field.path_to_field:
+                                i.unselect()
                             player_round = False
+                elif player_choice == 1:
+                    selecting_field = self.search_for_field(position)
+                    if selecting_field is None or selecting_field.ball is not None:
+                        continue
+                    if selected_field.to_field != selecting_field:
+                        if selected_field.path_to_field:
+                            selected_field.prev_to_field = selected_field.to_field
+                            selected_field.prev_path_to_field = selected_field.path_to_field
+                        selected_field.to_field = selecting_field
+                        selected_field.path_to_field = self.find_path(selected_field, selecting_field)
+                        if selected_field.path_to_field:
+                            for i in set(selected_field.prev_path_to_field)-set(selected_field.path_to_field):
+                                i.unselect()
+                            selected_field.to_field = selecting_field
+                            selected_field.path_to_field = self.find_path(selected_field, selecting_field)
+                            if not selected_field.path_to_field:
+                                continue
+                            for i in selected_field.path_to_field:
+                                i.select()
 
                 if event.type == pygame.QUIT:
                     return True
-        return True
+        return False
 
     '''
         creating new balls in between rounds
@@ -110,33 +129,47 @@ class Game:
     '''
         Implemented A* pathfinding algorithm 
     '''
-    def find_path(self, start_field: field.Field, end_field: field.Field):  # TODO: fix it!
-        visited = []    # [3,4,5,2,1] -> [vertex]
-        adjacent = [start_field.set_score(0, self.distance(start_field.id, end_field.id))]
-        path = []
+    def find_path(self, start_field: field.Field, end_field: field.Field):
+        visited = []
+        adjacent = [start_field]
+        came_from = {}
+        for i in self.field_list:
+            i.set_score(self.distance(end_field.id, i.id), 10000)
+        start_field.set_g(0)
+        start_field.update_f()
 
         while adjacent:
             adjacent.sort()
-            x = adjacent[0]
-            if x.id == end_field.id:
-                return path
-            adjacent.remove(x)
-            visited.append(x)
-            print(self.adjacent_list(x.id))
-            for y in self.adjacent_list(x.id):
-                y = self.field_list[y]
-                if y in visited or y.id < 0 or y.id > 80:
+            current = adjacent[0]
+            if current.id == end_field.id:
+                return self.reconstruct_path(came_from, current)
+            adjacent.remove(current)
+            visited.append(current)
+            for y in self.adjacent_list(current.id):
+                y = self.ret_field_from_id(y)
+                if y in visited or y.ball is not None:
                     continue
-                tentative_g = self.distance(start_field.id, y.id) + 1  # dunno if ok
-                tentative = False
-                if y not in adjacent:
-                    adjacent.append(y.set_score(self.distance(start_field.id, y.id), self.distance(end_field.id, y.id)))  # nope
-                    tentative = True
-                elif tentative_g < y.g_score:
-                    tentative = True
-                if tentative:
-                    path.append(y)
+                tentative_g = current.g_score + self.distance(current.id, y.id)
+                if tentative_g < y.g_score:
+                    came_from[y] = current
+                    y.set_g(tentative_g)
+                    y.update_f()
+                    if y not in adjacent:
+                        adjacent.append(y)
         return False
+
+    def ret_field_from_id(self, field_id):
+        for i in self.field_list:
+            if i.id == field_id:
+                return i
+        return False
+
+    def reconstruct_path(self, came_from, current):
+        path = [current]
+        while current in came_from:
+            current = came_from[current]
+            path.append(current)
+        return path
 
     def f_score(self, id, start, end):
         return self.distance(id, start) + self.distance(id, end)
@@ -144,16 +177,20 @@ class Game:
     def distance(self, start, stop):
         x1 = start % self.rect_number
         x2 = stop % self.rect_number
-        y1 = int(start / self.rect_number) - 1  # Think if this is ok
+        y1 = int(start / self.rect_number) - 1
         y2 = int(stop / self.rect_number) - 1
         x = abs(x1 - x2)
         y = abs(y1 - y2)
         return x + y
 
     def adjacent_list(self, vertex):
-        t = [vertex-9, vertex+9]
-        if vertex%9:
+        t = []
+        if vertex - 9 >= 0:
+            t.append(vertex-9)
+        if vertex + 9 <= 80:
+            t.append(vertex+9)
+        if vertex % 9:
             t.append(vertex-1)
-        elif (vertex-1)%9:
+        if (vertex+1) % 9:
             t.append(vertex+1)
         return t
