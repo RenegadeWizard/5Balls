@@ -11,6 +11,9 @@ def main():
     game_on = True
     game_console = game.Game()
 
+    '''
+        Main game loop
+    '''
     while game_on:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

@@ -17,15 +17,6 @@ orange = (255, 140, 0)
 
 colors = [blue, red, green, white, dark_gray, yellow, orange]
 
-lt = -10
-t = -9
-rt = -8
-l = -1
-r = 1
-lb = 8
-b = 9
-rb = 10
-
 
 def rand_color():
     return colors[random.randrange(len(colors))]
@@ -87,7 +78,10 @@ class Game:
                             selected_field.draw()
                             for i in selected_field.path_to_field:
                                 i.unselect()
-                            print(self.five_in_a_row(selected_field_end, 0, l) + self.five_in_a_row(selected_field_end, 0, r) + 1)  # TODO: Make them disappear
+                            # print(self.five_in_a_row(selected_field_end, 0, l) + self.five_in_a_row(selected_field_end, 0, r) + 1)  # TODO: Make them disappear
+                            for i in self.strike(selected_field_end):
+                                i.ball = None
+                                i.draw()
                             player_round = False
                 elif player_choice == 1:
                     selecting_field = self.search_for_field(position)
@@ -205,11 +199,71 @@ class Game:
             t.append(vertex+1)
         return t
 
-    def five_in_a_row(self, ball, length, side):
-        temp = self.ret_field_from_id(ball.id + side)
-        if not temp or temp.ball is None:
+    def right(self, ball, length, tab):
+        temp = self.ret_field_from_id(ball.id + 1)
+        if not temp or temp.ball is None or not ball.id % 9:
+            tab.append(ball)
             return length
         if temp.ball.color != ball.ball.color:
+            tab.append(ball)
             return length
         else:
-            return self.five_in_a_row(temp, length + 1, side)
+            tab.append(ball)
+            return self.right(temp, length + 1, tab)
+
+    def left(self, ball, length, tab):
+        temp = self.ret_field_from_id(ball.id - 1)
+        if not temp or temp.ball is None or not (ball.id - 1) % 9:
+            tab.append(ball)
+            return length
+        if temp.ball.color != ball.ball.color:
+            tab.append(ball)
+            return length
+        else:
+            tab.append(ball)
+            return self.left(temp, length + 1, tab)
+
+    def top(self, ball, length, tab):
+        temp = self.ret_field_from_id(ball.id - 9)
+        if not temp or temp.ball is None:
+            tab.append(ball)
+            return length
+        if temp.ball.color != ball.ball.color:
+            tab.append(ball)
+            return length
+        else:
+            tab.append(ball)
+            return self.top(temp, length + 1, tab)
+
+    def bot(self, ball, length, tab):
+        temp = self.ret_field_from_id(ball.id + 9)
+        if not temp or temp.ball is None:
+            tab.append(ball)
+            return length
+        if temp.ball.color != ball.ball.color:
+            tab.append(ball)
+            return length
+        else:
+            tab.append(ball)
+            return self.bot(temp, length + 1, tab)
+
+    def strike(self, ball):
+        lt = -10
+        t = -9
+        rt = -8
+        l = -1
+        r = 1
+        lb = 8
+        b = 9
+        rb = 10
+        tab = []
+        if self.right(ball, 0, tab) + self.left(ball, 0, tab) >= 4:
+            return list(set(tab))
+        tab = []
+        if self.top(ball, 0, tab) + self.bot(ball, 0, tab) >= 4:
+            return list(set(tab))
+        # if self.five_in_a_row(ball, 0, lt) + self.five_in_a_row(ball, 0, rb) >= 5:
+        #     pass
+        # if self.five_in_a_row(ball, 0, lb) + self.five_in_a_row(ball, 0, rt) >= 5:
+        #     pass
+        return []
