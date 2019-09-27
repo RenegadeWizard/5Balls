@@ -7,6 +7,7 @@ class Menu:
         self.font = pygame.font.SysFont("Arial", 52)
         self.label = self.font.render("Points: ", 1, (255, 255, 255))
         self.points = self.font.render("0", 1, (255, 255, 255))
+        # pygame.draw.rect(self.display, (255, 255, 255), (850, 300, 150, 300)) # TODO: Reset button
 
     def render(self):
         self.display.blit(self.label, (790, 100))

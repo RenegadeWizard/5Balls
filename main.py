@@ -12,12 +12,10 @@ def main():
     game_on = True
     game_console = game.Game()
     points.render()
-    k = 0
     '''
         Main game loop
     '''
     while game_on:
-        k += 1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_on = False
@@ -26,7 +24,7 @@ def main():
         if game_console.play():
             break
         pygame.display.update()
-        points.score(k)
+        points.score(game_console.score)
 
     pygame.quit()
     quit()

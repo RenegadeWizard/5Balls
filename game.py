@@ -31,6 +31,7 @@ class Game:
         self.padding = int((self.dimensions[0]-250)/self.rect_number * 0.15)
         self.full_rect = self.rect_size + self.padding
         self.field_list = []
+        self.score = 0
 
         self.display.fill(dark_gray)      # background
         for i in range(self.rect_number):
@@ -78,7 +79,6 @@ class Game:
                             selected_field.draw()
                             for i in selected_field.path_to_field:
                                 i.unselect()
-                            # print(self.five_in_a_row(selected_field_end, 0, l) + self.five_in_a_row(selected_field_end, 0, r) + 1)  # TODO: Make them disappear
                             for i in self.strike(selected_field_end):
                                 i.ball = None
                                 i.draw()
@@ -105,6 +105,9 @@ class Game:
 
                 if event.type == pygame.QUIT:
                     return True
+                if self.number_of_balls() == 81:
+                    return True
+
         return False
 
     '''
@@ -161,12 +164,18 @@ class Game:
                         adjacent.append(y)
         return False
 
+    '''
+        Returns field by id
+    '''
     def ret_field_from_id(self, field_id):
         for i in self.field_list:
             if i.id == field_id:
                 return i
         return False
 
+    '''
+        Reconstructs path from A*
+    '''
     def reconstruct_path(self, came_from, current):
         path = [current]
         while current in came_from:
@@ -174,9 +183,9 @@ class Game:
             path.append(current)
         return path
 
-    def f_score(self, id, start, end):
-        return self.distance(id, start) + self.distance(id, end)
-
+    '''
+        distance between two fields
+    '''
     def distance(self, start, stop):
         x1 = start % self.rect_number
         x2 = stop % self.rect_number
@@ -186,6 +195,9 @@ class Game:
         y = abs(y1 - y2)
         return x + y
 
+    '''
+        Returns a list of adjacent field ids
+    '''
     def adjacent_list(self, vertex):
         t = []
         if vertex - 9 >= 0:
@@ -200,7 +212,7 @@ class Game:
 
     def right(self, ball, length, tab):
         temp = self.ret_field_from_id(ball.id + 1)
-        if not temp or temp.ball is None or not ball.id % 9:
+        if not temp or temp.ball is None or not ((temp.id - 1) % 9) - 8:
             tab.append(ball)
             return length
         if temp.ball.color != ball.ball.color:
@@ -212,7 +224,7 @@ class Game:
 
     def left(self, ball, length, tab):
         temp = self.ret_field_from_id(ball.id - 1)
-        if not temp or temp.ball is None or not (ball.id - 1) % 9:
+        if not temp or temp.ball is None or not (temp.id % 9) - 8:
             tab.append(ball)
             return length
         if temp.ball.color != ball.ball.color:
@@ -247,22 +259,22 @@ class Game:
             return self.bot(temp, length + 1, tab)
 
     def strike(self, ball):
-        lt = -10
-        t = -9
-        rt = -8
-        l = -1
-        r = 1
-        lb = 8
-        b = 9
-        rb = 10
         tab = []
         if self.right(ball, 0, tab) + self.left(ball, 0, tab) >= 4:
+            self.score += len(list(set(tab)))
             return list(set(tab))
         tab = []
         if self.top(ball, 0, tab) + self.bot(ball, 0, tab) >= 4:
+            self.score += len(list(set(tab)))
             return list(set(tab))
         # if self.five_in_a_row(ball, 0, lt) + self.five_in_a_row(ball, 0, rb) >= 5:
         #     pass
         # if self.five_in_a_row(ball, 0, lb) + self.five_in_a_row(ball, 0, rt) >= 5:
         #     pass
         return []
+
+    def number_of_balls(self):
+        sum = 0
+        for i in self.field_list:
+            sum += 1 if i.ball is not None else 0
+        return sum
