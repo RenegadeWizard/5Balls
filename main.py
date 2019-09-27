@@ -6,15 +6,18 @@ import game
 def main():
     pygame.init()
     pygame.display.set_caption("5Balls")
-    display = pygame.display.set_mode((750, 750), 0)
+    display = pygame.display.set_mode((1000, 750), 0)
+    points = menu.Menu()
 
     game_on = True
     game_console = game.Game()
-
+    points.render()
+    k = 0
     '''
         Main game loop
     '''
     while game_on:
+        k += 1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_on = False
@@ -23,6 +26,7 @@ def main():
         if game_console.play():
             break
         pygame.display.update()
+        points.score(k)
 
     pygame.quit()
     quit()

@@ -27,15 +27,15 @@ class Game:
         self.rect_number = 9
         self.display = pygame.display.get_surface()
         self.dimensions = pygame.display.get_window_size()
-        self.rect_size = int(self.dimensions[0]/self.rect_number * 0.85)
-        self.padding = int(self.dimensions[0]/self.rect_number * 0.15)
+        self.rect_size = int((self.dimensions[0]-250)/self.rect_number * 0.85)
+        self.padding = int((self.dimensions[0]-250)/self.rect_number * 0.15)
         self.full_rect = self.rect_size + self.padding
         self.field_list = []
 
         self.display.fill(dark_gray)      # background
         for i in range(self.rect_number):
             for j in range(self.rect_number):
-                self.field_list.append(field.Field((self.padding + i*self.full_rect, self.padding + j*self.full_rect),self.rect_size, self.padding, gray, j*9+i).draw())
+                self.field_list.append(field.Field((self.padding + i*self.full_rect, self.padding + j*self.full_rect), self.rect_size, self.padding, gray, j*9+i).draw())
         pygame.display.update()
         self.colored_field = self.field_list[0]
 
@@ -102,7 +102,6 @@ class Game:
                                 continue
                             for i in selected_field.path_to_field:
                                 i.select()
-
 
                 if event.type == pygame.QUIT:
                     return True
